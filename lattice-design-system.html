@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Lattice — Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  :root{
+    --black:#0A0A0A;
+    --surface-1:#131313;
+    --surface-2:#1B1B1A;
+    --border-subtle: rgba(255,255,255,.08);
+    --border-default: rgba(255,255,255,.14);
+    --cream:#F1EEE4;
+    --grey-400:#9C9A90;
+    --grey-600:#6B6960;
+    --lime:#B6FF3E;
+    --lime-dim: rgba(182,255,62,.12);
+    --violet:#8C6FF0;
+    --rose:#E896B8;
+    --amber:#E3A75C;
+    --code-comment:#6E7A6C;
+    --radius-sm:6px;
+    --radius-md:10px;
+    --radius-lg:16px;
+    --font-display:'Inter',sans-serif;
+    --font-serif:'Instrument Serif',serif;
+    --font-mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--black); color:var(--cream);
+    font-family:var(--font-display); -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 32px;}
+  .label{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--grey-600);
+  }
+  .accent{ font-family:var(--font-serif); font-style:italic; color:var(--lime); font-weight:400;}
+
+  /* ---- top nav ---- */
+  nav{
+    position:sticky; top:0; z-index:10; background:rgba(10,10,10,.9);
+    backdrop-filter:blur(6px); border-bottom:1px solid var(--border-subtle);
+  }
+  nav .wrap{display:flex; align-items:center; justify-content:space-between; padding-top:16px; padding-bottom:16px;}
+  nav .brand{font-weight:800; letter-spacing:-0.02em;}
+  nav .links{display:flex; gap:22px; font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--grey-400);}
+  nav .links a:hover{color:var(--lime);}
+
+  section{padding:72px 0; border-bottom:1px solid var(--border-subtle);}
+  h2{font-size:32px; font-weight:800; letter-spacing:-0.02em; margin:0 0 8px;}
+  .section-intro{color:var(--grey-400); font-size:15px; line-height:1.6; max-width:600px; margin:0 0 40px;}
+  .eyebrow{font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--lime); margin-bottom:10px;}
+
+  /* ---- hero ---- */
+  .hero{position:relative; overflow:hidden; min-height:480px; border-bottom:1px solid var(--border-subtle); display:flex; align-items:center;}
+  .hero-canvas{position:absolute; inset:0; width:100%; height:100%; z-index:0; display:block; pointer-events:none;}
+  .hero-fade{position:absolute; inset:0; z-index:1; pointer-events:none; background:linear-gradient(90deg, var(--black) 0%, rgba(10,10,10,.85) 22%, rgba(10,10,10,.35) 45%, rgba(10,10,10,0) 68%);}
+  .hero-content{position:relative; z-index:2; padding:100px 0 80px;}
+  .hero h1{font-size:56px; line-height:1.02; font-weight:800; letter-spacing:-0.02em; margin:0 0 20px;}
+  .hero h1 em{font-family:var(--font-serif); font-style:italic; color:var(--lime); font-weight:400;}
+  .hero p{color:var(--grey-400); font-size:16px; max-width:560px; line-height:1.6;}
+  .hero .meta{margin-top:28px; display:flex; gap:28px; font-family:var(--font-mono); font-size:11px; color:var(--grey-600); text-transform:uppercase; letter-spacing:.06em;}
+  .hero-hint{position:absolute; right:32px; bottom:20px; z-index:2; font-family:var(--font-mono); font-size:10.5px; color:var(--grey-600); letter-spacing:.04em; opacity:.7;}
+
+  /* ---- swatches ---- */
+  .swatch-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:16px;}
+  .swatch{border:1px solid var(--border-subtle); border-radius:var(--radius-md); overflow:hidden;}
+  .swatch .fill{height:72px;}
+  .swatch .info{padding:12px 14px; background:var(--surface-1);}
+  .swatch .name{font-size:13px; font-weight:600;}
+  .swatch .hex{font-family:var(--font-mono); font-size:11px; color:var(--grey-400); margin-top:2px;}
+  .swatch .use{font-size:11px; color:var(--grey-600); margin-top:6px; line-height:1.4;}
+
+  /* ---- type specimens ---- */
+  .type-row{display:flex; align-items:baseline; justify-content:space-between; padding:22px 0; border-bottom:1px solid var(--border-subtle); gap:24px;}
+  .type-row:last-child{border-bottom:none;}
+  .type-meta{font-family:var(--font-mono); font-size:11px; color:var(--grey-600); white-space:nowrap; padding-top:6px;}
+
+  /* ---- token table ---- */
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th{text-align:left; font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--grey-600); padding:8px 12px; border-bottom:1px solid var(--border-default);}
+  td{padding:10px 12px; border-bottom:1px solid var(--border-subtle); color:var(--grey-400);}
+  td.strong{color:var(--cream); font-weight:600;}
+  td code{font-family:var(--font-mono); color:var(--lime); font-size:12px;}
+
+  /* ---- stat cards ---- */
+  .stat-row{display:grid; grid-template-columns:repeat(4,1fr);}
+  .stat-card{padding:0 24px 0 0; margin-right:24px; border-right:1px solid var(--border-subtle);}
+  .stat-card:last-child{border-right:none; padding-right:0;}
+  .stat-label{display:flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:11px; color:var(--grey-600); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px;}
+  .dot{width:6px; height:6px; border-radius:50%; background:var(--lime); box-shadow:0 0 8px var(--lime);}
+  .dot.idle{background:var(--grey-600); box-shadow:none;}
+  .stat-num{font-size:36px; font-weight:800; letter-spacing:-0.02em;}
+  .stat-num span{font-size:18px; font-weight:600; color:var(--grey-400); margin-left:4px;}
+  .stat-desc{font-size:12.5px; color:var(--grey-600); line-height:1.5; margin-top:8px;}
+
+  /* ---- feature cards ---- */
+  .feature-grid{display:grid; grid-template-columns:repeat(3,1fr); border:1px solid var(--border-subtle); border-radius:var(--radius-md); overflow:hidden;}
+  .feature-card{padding:26px; border-right:1px solid var(--border-subtle); border-bottom:1px solid var(--border-subtle);}
+  .feature-card:nth-child(3n){border-right:none;}
+  .feature-card:nth-last-child(-n+3){border-bottom:none;}
+  .feature-icon{width:20px; height:20px; margin-bottom:16px; color:var(--cream);}
+  .feature-title{font-size:16px; font-weight:700; margin-bottom:8px;}
+  .feature-title.is-accent{font-family:var(--font-serif); font-style:italic; font-weight:400; color:var(--lime); font-size:19px;}
+  .feature-desc{font-size:13px; color:var(--grey-400); line-height:1.55; margin-bottom:16px;}
+  .feature-link{font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--grey-600); transition:color .15s;}
+  .feature-card:hover .feature-link{color:var(--lime);}
+
+  /* ---- code block ---- */
+  .code-card{background:var(--surface-1); border:1px solid var(--border-subtle); border-radius:var(--radius-md); overflow:hidden;}
+  .code-head{display:flex; justify-content:space-between; align-items:center; padding:10px 16px; border-bottom:1px solid var(--border-subtle); font-family:var(--font-mono); font-size:11px; color:var(--grey-600);}
+  .copy-btn{border:1px solid var(--border-default); border-radius:var(--radius-sm); padding:3px 10px; font-family:var(--font-mono); font-size:10px; color:var(--grey-400); text-transform:uppercase; letter-spacing:.06em;}
+  pre{margin:0; padding:20px; font-family:var(--font-mono); font-size:12.5px; line-height:1.7; overflow-x:auto;}
+  .cm{color:var(--code-comment); font-style:italic;}
+  .kw{color:var(--rose);}
+  .st{color:var(--amber);}
+  .fg{color:var(--cream);}
+  .gr{color:var(--grey-400);}
+
+  /* ---- badges ---- */
+  .badge{display:inline-flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:.06em; padding:4px 10px; border-radius:20px; border:1px solid;}
+  .badge.live{border-color:var(--lime); color:var(--lime);}
+  .badge.idle{border-color:var(--border-default); color:var(--grey-600);}
+  .badge-row{display:flex; gap:12px; align-items:center;}
+
+  /* ---- meta list ---- */
+  .meta-list div{display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border-subtle); font-size:13px;}
+  .meta-list div:last-child{border-bottom:none;}
+  .meta-list .k{font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--grey-600);}
+  .meta-list .v{color:var(--cream);}
+
+  /* ---- data rows (mesh scan) ---- */
+  .scan-card{background:var(--surface-1); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:6px 20px;}
+  .scan-row{display:grid; grid-template-columns:1.4fr 1fr .8fr .6fr; align-items:center; padding:13px 0; border-bottom:1px solid var(--border-subtle); font-size:13px;}
+  .scan-row:last-child{border-bottom:none;}
+  .scan-name{font-family:var(--font-mono); color:var(--cream);}
+  .scan-tag{font-family:var(--font-mono); font-size:11px; color:var(--grey-600); text-transform:uppercase; letter-spacing:.04em;}
+  .scan-rate{font-family:var(--font-mono); color:var(--grey-400); text-align:right;}
+
+  /* ---- testimonial ---- */
+  blockquote{margin:0; font-family:var(--font-serif); font-style:italic; font-size:26px; line-height:1.45; color:var(--cream); max-width:680px;}
+  blockquote em{color:var(--lime); font-style:italic;}
+  .cite{display:flex; align-items:center; gap:8px; margin-top:24px; font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--grey-600);}
+
+  /* ---- thumbnail grid ---- */
+  .thumb-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:12px;}
+  .thumb{aspect-ratio:4/3; border-radius:var(--radius-sm); border:1px solid var(--border-subtle); background:linear-gradient(160deg,#111 0%,#1a1a1a 60%,#141414 100%);}
+  .thumb.selected{border:2px solid var(--violet); box-shadow:0 0 0 3px rgba(140,111,240,.15);}
+
+  .render-figure{position:relative; height:280px; overflow:hidden; border:1px solid var(--border-subtle); border-radius:var(--radius-md); background:var(--surface-1);}
+
+  .do-dont{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .do-dont .col{border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:18px 20px;}
+  .do-dont .col h4{margin:0 0 12px; font-size:12px; text-transform:uppercase; letter-spacing:.06em; font-family:var(--font-mono);}
+  .do-dont .col.do h4{color:var(--lime);}
+  .do-dont .col.dont h4{color:#E8807A;}
+  .do-dont li{font-size:13px; color:var(--grey-400); line-height:1.6; margin-bottom:8px;}
+
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:48px;}
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  footer{padding:40px 0; text-align:center; color:var(--grey-600); font-size:12px; font-family:var(--font-mono);}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="brand">Lattice / Design System</div>
+    <div class="links">
+      <a href="#colors">Colors</a>
+      <a href="#type">Type</a>
+      <a href="#space">Spacing</a>
+      <a href="#components">Components</a>
+      <a href="#patterns">Patterns</a>
+      <a href="#a11y">A11y</a>
+    </div>
+  </div>
+</nav>
+
+<div class="hero" id="heroSection">
+  <canvas class="hero-canvas" id="heroTerrain"></canvas>
+  <div class="hero-fade"></div>
+  <div class="wrap hero-content">
+    <div class="eyebrow">Extracted design system · v0.1</div>
+    <h1>Route <em>anything,</em><br>anywhere.</h1>
+    <p>A dark, technical, infrastructure-grade visual language for the Lattice mesh SDK. Built on one recurring move: bold grotesque sans for statements, a single italic serif accent in lime for the phrase that matters, and monospace for anything measured.</p>
+    <div class="meta">
+      <span>5 screenshots analyzed</span>
+      <span>10 components identified</span>
+      <span>2 accent colors</span>
+    </div>
+  </div>
+  <div class="hero-hint">// move your cursor — the ground rises to meet it</div>
+</div>
+
+<section id="colors">
+  <div class="wrap">
+    <h2>Colors</h2>
+    <p class="section-intro">A near-black canvas with one warm neutral and one loud accent. Green is spent deliberately — status, emphasis, and nothing else. Violet appears exactly once, as a selection ring, and should stay that rare.</p>
+    <div class="swatch-grid">
+      <div class="swatch">
+        <div class="fill" style="background:var(--black);"></div>
+        <div class="info"><div class="name">Black</div><div class="hex">#0A0A0A</div><div class="use">Page background</div></div>
+      </div>
+      <div class="swatch">
+        <div class="fill" style="background:var(--surface-1);"></div>
+        <div class="info"><div class="name">Surface 1</div><div class="hex">#131313</div><div class="use">Card / panel fill</div></div>
+      </div>
+      <div class="swatch">
+        <div class="fill" style="background:var(--surface-2);"></div>
+        <div class="info"><div class="name">Surface 2</div><div class="hex">#1B1B1A</div><div class="use">Nested surface, hover fill</div></div>
+      </div>
+      <div class="swatch">
+        <div class="fill" style="background:var(--cream);"></div>
+        <div class="info"><div class="name">Cream</div><div class="hex">#F1EEE4</div><div class="use">Primary text, headlines</div></div>
+      </div>
+      <div class="swatch">
+        <div class="fill" style="background:var(--grey-400);"></div>
+        <div class="info"><div class="name">Grey 400</div><div class="hex">#9C9A90</div><div class="use">Body copy, descriptions</div></div>
+      </div>
+      <div class="swatch">
+        <div class="fill" style="background:var(--grey-600);"></div>
+        <div class="info"><div class="name">Grey 600</div><div class="hex">#6B6960</div><div class="use">Micro-labels, timestamps</div></div>
+      </div>
+      <div class="swatch">
+        <div class="fill" style="background:var(--lime);"></div>
+        <div class="info"><div class="name">Lime</div><div class="hex">#B6FF3E</div><div class="use">Primary accent — emphasis, live status</div></div>
+      </div>
+      <div class="swatch">
+        <div class="fill" style="background:var(--violet);"></div>
+        <div class="info"><div class="name">Violet</div><div class="hex">#8C6FF0</div><div class="use">Selection state only — do not use elsewhere</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="type">
+  <div class="wrap">
+    <h2>Typography</h2>
+    <p class="section-intro">Three roles, no more. A bold grotesque for structure, an italic serif reserved for one phrase per headline, and a monospace for anything that's measured, coded, or timestamped. Font families below are close working substitutes for the originals in the screenshots, not confirmed exact matches.</p>
+
+    <div class="type-row">
+      <div style="font-family:var(--font-display); font-weight:800; font-size:44px; letter-spacing:-0.02em;">Display Bold</div>
+      <div class="type-meta">Inter 800 · 44–88px · -2% tracking<br>Hero &amp; section headlines</div>
+    </div>
+    <div class="type-row">
+      <div class="accent" style="font-size:44px;">Accent Italic</div>
+      <div class="type-meta">Instrument Serif Italic · 400<br>One phrase of emphasis per headline, lime only</div>
+    </div>
+    <div class="type-row">
+      <div style="font-size:16px; color:var(--grey-400); max-width:420px; line-height:1.6;">Body copy sits quiet and grey — description text, never competing with the headline above it.</div>
+      <div class="type-meta">Inter 400 · 15–16px / 1.6</div>
+    </div>
+    <div class="type-row">
+      <div class="label">Mono Label · Uppercase · Tracked</div>
+      <div class="type-meta">JetBrains Mono 500 · 11px · +8% tracking</div>
+    </div>
+    <div class="type-row">
+      <div style="font-family:var(--font-serif); font-style:italic; font-size:24px; color:var(--cream);">Quote-voice italic serif</div>
+      <div class="type-meta">Instrument Serif Italic · 24–28px<br>Testimonial body text, white — not lime</div>
+    </div>
+  </div>
+</section>
+
+<section id="space">
+  <div class="wrap">
+    <h2>Spacing, radius &amp; borders</h2>
+    <p class="section-intro">Generous section rhythm, tight card padding. Borders do the work shadows would elsewhere — everything is one hairline away from the next thing.</p>
+    <table>
+      <tr><th>Token</th><th>Value</th><th>Used for</th></tr>
+      <tr><td class="strong">space-1</td><td><code>4px</code></td><td>Icon-to-label gaps</td></tr>
+      <tr><td class="strong">space-2</td><td><code>8px</code></td><td>Label-to-value stacks</td></tr>
+      <tr><td class="strong">space-3</td><td><code>16px</code></td><td>Internal card padding (min)</td></tr>
+      <tr><td class="strong">space-4</td><td><code>24px</code></td><td>Grid gutters, card padding</td></tr>
+      <tr><td class="strong">space-5</td><td><code>32px</code></td><td>Card padding (roomy), stat gutters</td></tr>
+      <tr><td class="strong">space-6</td><td><code>72–100px</code></td><td>Section-to-section rhythm</td></tr>
+      <tr><td class="strong">radius-sm</td><td><code>6px</code></td><td>Badges, buttons, thumbnails</td></tr>
+      <tr><td class="strong">radius-md</td><td><code>10px</code></td><td>Cards, code blocks, panels</td></tr>
+      <tr><td class="strong">border</td><td><code>1px solid rgba(255,255,255,.08–.14)</code></td><td>Every card, divider, column rule</td></tr>
+    </table>
+  </div>
+</section>
+
+<section id="components">
+  <div class="wrap">
+    <h2>Components</h2>
+    <p class="section-intro">Ten recurring patterns, documented with variants and states.</p>
+
+    <div style="margin-bottom:56px;">
+      <div class="eyebrow">00 · Wireframe Terrain (signature texture)</div>
+      <p style="color:var(--grey-600); font-size:13px; margin:0 0 20px; max-width:640px;">The one illustrative asset in the whole system: a lit, undulating wireframe mesh in off-white, always on black. It carries no data — it's atmosphere, standing in for "mesh," "surface," and "terrain" without saying any of those words out loud. It's contained to the hero, full-bleed but boxed to that section only — everywhere else on the page is flat black. It never sits behind body copy, cards, or tables.</p>
+      <p style="color:var(--grey-600); font-size:13px; margin:0 0 20px; max-width:640px;">Built as a GLSL shader, not a JS-computed mesh: the vertex shader displaces a plane with layered sine noise for the base topography, then adds a Gaussian "dome swell" wherever the cursor's screen position raycasts onto the ground plane — the terrain physically rises to meet the pointer, eased with a lerp so it feels weighted rather than snapped. A view-depth fog in the fragment shader fades distant lines toward black. The sample below is the same shader running in a smaller, self-contained instance — the pointer only swells the terrain while hovering that box.</p>
+      <div class="render-figure">
+        <canvas id="terrainSample" style="position:absolute; inset:0; width:100%; height:100%;"></canvas>
+      </div>
+      <table style="margin-top:16px;">
+        <tr><th>Property</th><th>Value</th></tr>
+        <tr><td class="strong">Stroke color</td><td>Cream <code>#E6E6DE</code>, never lime — texture stays neutral so accent color keeps its meaning</td></tr>
+        <tr><td class="strong">Base topography</td><td>Layered sine displacement in the vertex shader (GPU-computed, animates slowly over time)</td></tr>
+        <tr><td class="strong">Fade</td><td>View-depth fog (fragment shader) fades far geometry toward black; a CSS scrim guarantees the hero text stays legible regardless</td></tr>
+        <tr><td class="strong">Cursor response</td><td>A Gaussian dome swells up from the surface at the cursor's raycasted world position, eased via lerp; camera pans slightly with pointer x for parallax. Disabled under <code>prefers-reduced-motion</code></td></tr>
+      </table>
+    </div>
+
+    <div style="margin-bottom:56px;">
+      <div class="eyebrow">01 · Stat Card</div>
+      <p style="color:var(--grey-600); font-size:13px; margin:0 0 20px;">A live metric: status label with dot, a large number, a one-line description. Rows are divided by hairlines, never boxed.</p>
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-label"><span class="dot"></span> Mainnet · Live</div>
+          <div class="stat-num">204<span>nodes</span></div>
+          <div class="stat-desc">Active validator set across 38 regions, signing in real time.</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Throughput · 24h</div>
+          <div class="stat-num">1.62<span>M msg</span></div>
+          <div class="stat-desc">Verified packets routed end-to-end through the mesh.</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">P50 Finality</div>
+          <div class="stat-num">412<span>ms</span></div>
+          <div class="stat-desc">Median time from emit to receiver acknowledgement.</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Slashing Events</div>
+          <div class="stat-num">0<span>today</span></div>
+          <div class="stat-desc">Operator misbehaviour over the trailing 24 hours.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:56px;">
+      <div class="eyebrow">02 · Section Headline</div>
+      <p style="color:var(--grey-600); font-size:13px; margin:0 0 20px;">Bold statement, one phrase swapped to lime italic serif, then a two-line grey subhead. The italic phrase should be the sentence's actual payload — never decorative.</p>
+      <div style="font-size:32px; font-weight:800; letter-spacing:-0.02em; margin-bottom:10px;">A single send(). Every destination handled.</div>
+      <div style="color:var(--grey-400); font-size:14px; max-width:520px; line-height:1.6;">The Lattice SDK speaks one verb. Compose a message, pick an endpoint, and the mesh worries about routing, ordering, retries, and proofs.</div>
+    </div>
+
+    <div style="margin-bottom:56px;">
+      <div class="eyebrow">03 · Feature Card</div>
+      <p style="color:var(--grey-600); font-size:13px; margin:0 0 20px;">3-column grid, hairline-divided. Title is bold white by default; exactly one card per set may use the italic-lime title to mark the "signature" primitive. Link reveals lime on card hover.</p>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z"/></svg>
+          <div class="feature-title">Endpoints</div>
+          <div class="feature-desc">Addressable receivers in any region. Static or rotating. Stateful or pure.</div>
+          <div class="feature-link">View →</div>
+        </div>
+        <div class="feature-card">
+          <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg>
+          <div class="feature-title">Channels</div>
+          <div class="feature-desc">Ordered, replayable streams between endpoints. Backpressure included.</div>
+          <div class="feature-link">View →</div>
+        </div>
+        <div class="feature-card">
+          <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12a9 9 0 1 1-3-6.7M21 3v6h-6"/></svg>
+          <div class="feature-title is-accent">Proofs</div>
+          <div class="feature-desc">Merkle, BLS, or zk. Pick the proof; the verifier ships with the SDK.</div>
+          <div class="feature-link">View →</div>
+        </div>
+        <div class="feature-card">
+          <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 17 9 12 4 7M12 19h8"/></svg>
+          <div class="feature-title">Runtime</div>
+          <div class="feature-desc">A 3 MB binary you can drop next to your service. Zero daemons.</div>
+          <div class="feature-link">View →</div>
+        </div>
+        <div class="feature-card">
+          <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 6 18 18M18 6 6 18"/></svg>
+          <div class="feature-title">Policy</div>
+          <div class="feature-desc">Declare who can route what, signed in source, enforced at the edge.</div>
+          <div class="feature-link">View →</div>
+        </div>
+        <div class="feature-card">
+          <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20a8 8 0 0 1 16 0M8 20a4 4 0 0 1 8 0M12 20v.01"/></svg>
+          <div class="feature-title">Telemetry</div>
+          <div class="feature-desc">Every hop emits a signed trace. Pipe directly into your own stack.</div>
+          <div class="feature-link">View →</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:56px;">
+      <div class="eyebrow">04 · Code Block</div>
+      <p style="color:var(--grey-600); font-size:13px; margin:0 0 20px;">Elevated surface with a file-path header and copy action. Syntax: comments dim + italic, keywords rose, strings amber, identifiers cream.</p>
+      <div class="code-card">
+        <div class="code-head"><span>routes/order-intake.ts</span><span class="copy-btn">Copy</span></div>
+        <pre><span class="cm">// Send a typed payload to any endpoint on the mesh.</span>
+<span class="kw">import</span> { lattice } <span class="kw">from</span> <span class="st">"@lattice/sdk"</span>;
+
+<span class="kw">const</span> <span class="fg">mesh</span> = <span class="fg">lattice</span>({
+  <span class="gr">apiKey:</span> process.env.LATTICE_KEY,
+  <span class="gr">network:</span> <span class="st">"mainnet"</span>,
+});
+
+<span class="kw">await</span> mesh.send({
+  <span class="gr">to:</span> <span class="st">"endpoint://eu-west/orders"</span>,
+  <span class="gr">payload:</span> { sku: <span class="st">"A-3104"</span>, qty: 12 },
+  <span class="gr">guarantee:</span> <span class="st">"exactly_once"</span>,
+  <span class="gr">proof:</span> <span class="st">"merkle"</span>,
+});</pre>
+      </div>
+    </div>
+
+    <div class="grid2" style="margin-bottom:56px;">
+      <div>
+        <div class="eyebrow">05 · Status Badge</div>
+        <p style="color:var(--grey-600); font-size:13px; margin:0 0 20px;">Outline pill, two states. Live pulses lime; idle drops to a flat grey outline — never a second color hue for "off."</p>
+        <div class="badge-row">
+          <span class="badge live"><span class="dot"></span> Live</span>
+          <span class="badge idle"><span class="dot idle"></span> Idle</span>
+        </div>
+      </div>
+      <div>
+        <div class="eyebrow">06 · Meta / Key-Value List</div>
+        <p style="color:var(--grey-600); font-size:13px; margin:0 0 20px;">Mono label, cream value, hairline rows. Used for spec sheets and API facts.</p>
+        <div class="meta-list">
+          <div><span class="k">Languages</span><span class="v">TypeScript · Rust · Go</span></div>
+          <div><span class="k">Install</span><span class="v">npm i @lattice/sdk</span></div>
+          <div><span class="k">Auth</span><span class="v">API key or signed JWT</span></div>
+          <div><span class="k">Surface</span><span class="v">5 verbs total</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:56px;">
+      <div class="eyebrow">07 · Data Row (Mesh Scan)</div>
+      <p style="color:var(--grey-600); font-size:13px; margin:0 0 20px;">Live console table: route name, category tag, rate, status. This is the one place idle state is functional rather than decorative.</p>
+      <div class="scan-card">
+        <div class="scan-row"><span class="scan-name">orders.fulfilment</span><span class="scan-tag">Channel · Ordered</span><span class="scan-rate">8,412 / min</span><span class="badge live"><span class="dot"></span>Live</span></div>
+        <div class="scan-row"><span class="scan-name">ledger.settlement</span><span class="scan-tag">Channel · In-proof</span><span class="scan-rate">2,118 / min</span><span class="badge live"><span class="dot"></span>Live</span></div>
+        <div class="scan-row"><span class="scan-name">presence.heartbeat</span><span class="scan-tag">Channel · Stateless</span><span class="scan-rate">61,204 / min</span><span class="badge live"><span class="dot"></span>Live</span></div>
+        <div class="scan-row"><span class="scan-name">telemetry.cold</span><span class="scan-tag">Channel · Batched</span><span class="scan-rate">paused</span><span class="badge idle"><span class="dot idle"></span>Idle</span></div>
+        <div class="scan-row"><span class="scan-name">policy.signed</span><span class="scan-tag">Control · Signed</span><span class="scan-rate">93 / min</span><span class="badge live"><span class="dot"></span>Live</span></div>
+      </div>
+    </div>
+
+    <div class="grid2" style="margin-bottom:56px;">
+      <div>
+        <div class="eyebrow">08 · Testimonial</div>
+        <p style="color:var(--grey-600); font-size:13px; margin:0 0 20px;">Large italic serif in cream — the punchline sentence switches to lime. Attribution stays mono, small, with the same status dot used elsewhere.</p>
+        <blockquote>We replaced four bridges, two queues, and a relay we were paying to keep awake. <em>Then we deleted the diagram.</em></blockquote>
+        <div class="cite"><span class="dot"></span> R. Acharya /// Platform Lead, Fieldline</div>
+      </div>
+      <div>
+        <div class="eyebrow">09 · Thumbnail Grid</div>
+        <p style="color:var(--grey-600); font-size:13px; margin:0 0 20px;">Small preview tiles, plain surface fill — no generated texture, so five extra WebGL contexts aren't spent on decoration. Selection state is the only place violet appears — a 2px ring, distinct from the lime system entirely.</p>
+        <div class="thumb-grid">
+          <div class="thumb"></div>
+          <div class="thumb"></div>
+          <div class="thumb selected"></div>
+          <div class="thumb"></div>
+          <div class="thumb"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="patterns">
+  <div class="wrap">
+    <h2>Usage patterns</h2>
+    <p class="section-intro">The system holds together because of a few rules that repeat everywhere, not because of any single component.</p>
+    <div class="do-dont">
+      <div class="col do">
+        <h4>Do</h4>
+        <ul style="padding-left:18px; margin:0;">
+          <li>Spend the lime italic on exactly one phrase per headline — the one carrying the actual claim.</li>
+          <li>Keep all numeric/technical facts in mono, even inline in a sentence (send(), 5 verbs, 412ms).</li>
+          <li>Use hairline borders instead of shadows to separate cards and columns.</li>
+          <li>Let idle/paused states drop to grey rather than a second warning color.</li>
+          <li>Reserve the wireframe terrain for the hero — it's atmosphere for the landing moment, not a texture for every section.</li>
+        </ul>
+      </div>
+      <div class="col dont">
+        <h4>Don't</h4>
+        <ul style="padding-left:18px; margin:0;">
+          <li>Don't apply the lime italic to more than one phrase in the same headline — it stops reading as emphasis.</li>
+          <li>Don't let the terrain leak past the hero into the rest of the page — everywhere else is flat black, no exceptions.</li>
+          <li>Don't introduce violet outside the single selection-state use case.</li>
+          <li>Don't box feature cards with a second border color for "featured" — the italic title already carries that signal.</li>
+          <li>Don't mix body sans weights — regular for copy, 700+ only for headlines and stat numbers.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="a11y" style="border-bottom:none;">
+  <div class="wrap">
+    <h2>Accessibility notes</h2>
+    <p class="section-intro">A dark, low-contrast-by-design palette needs a couple of explicit guardrails.</p>
+    <table>
+      <tr><th>Pairing</th><th>Approx. contrast</th><th>Note</th></tr>
+      <tr><td class="strong">Cream on Black</td><td>16.8 : 1</td><td>Passes AA/AAA at any size. Safe for headlines and body.</td></tr>
+      <tr><td class="strong">Grey-400 on Black</td><td>~5.9 : 1</td><td>Passes AA for body text; borderline for sub-14px fine print.</td></tr>
+      <tr><td class="strong">Grey-600 on Black</td><td>~3.4 : 1</td><td>Fails AA for text. Reserve for labels ≥11px mono with wide tracking, never for content that must be read, not skimmed.</td></tr>
+      <tr><td class="strong">Lime on Black</td><td>~14.5 : 1</td><td>High contrast — safe, but its intensity is the reason it's rationed to one phrase at a time.</td></tr>
+    </table>
+    <p style="color:var(--grey-400); font-size:13px; margin-top:20px; max-width:640px; line-height:1.6;">Status should never be color-only: the Live/Idle badge pairs its color with a text label and a dot, so it still reads correctly for color-blind users. Interactive elements (feature card links, copy button) need a visible focus ring in the lime accent for keyboard navigation — not shown by default in the screenshots, but required for shipping this system.</p>
+  </div>
+</section>
+
+<footer>Reconstructed from 5 provided screenshots · font families are close substitutes, not confirmed originals</footer>
+
+<script>
+  // Reusable shader-based wireframe terrain — a plane displaced by a GLSL
+  // height-field, with a cursor-tracked Gaussian "dome swell" raycast onto
+  // the ground plane, view-depth fog, and gentle camera parallax.
+  function createWireframeTerrain(container, canvas, opts){
+    opts = opts || {};
+    if (typeof THREE === 'undefined' || !canvas) return;
+    if (canvas.dataset.wireInit === '1') return; // guard against double init
+    canvas.dataset.wireInit = '1';
+    const isGlobal = !!opts.global;
+    if (!isGlobal && !container) return;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function getW(){ return Math.max(1, isGlobal ? window.innerWidth : container.clientWidth); }
+    function getH(){ return Math.max(1, isGlobal ? window.innerHeight : container.clientHeight); }
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(
+      opts.fov || 60, getW() / getH(), 0.1, 1000
+    );
+    camera.position.set(opts.camX ?? 0, opts.camY ?? 25, opts.camZ ?? 55);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'low-power' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(getW(), getH(), false);
+
+    // WebGL context can be dropped by the GPU/driver (common inside sandboxed
+    // iframes) — without handling this, the canvas goes blank forever.
+    let contextLost = false;
+    canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); contextLost = true; }, false);
+    canvas.addEventListener('webglcontextrestored', () => {
+      contextLost = false;
+      material.needsUpdate = true;
+      geometry.attributes.position.needsUpdate = true;
+    }, false);
+
+    const mouse = new THREE.Vector2(0, 0);
+    // Whether we've ever received a real pointer position. Before the user's
+    // cursor has entered (or after it leaves), mouse.x/y have no meaningful
+    // value — feeding a sentinel like -9999 into the pan/raycast math below
+    // was sending the camera tens of thousands of units off to the side
+    // within about a second of load, flying the terrain out of the frustum
+    // entirely. Gating on this flag keeps the camera centered instead.
+    let hasPointer = false;
+    const raycaster = new THREE.Raycaster();
+    const interactionPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    const mouseWorldPos = new THREE.Vector3(0, 0, 0);
+
+    function onMove(e){
+      hasPointer = true;
+      if (isGlobal){
+        mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      } else {
+        const r = container.getBoundingClientRect();
+        mouse.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+        mouse.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+      }
+    }
+    function onLeave(){ hasPointer = false; }
+    if (!reduceMotion){
+      const target = isGlobal ? window : container;
+      target.addEventListener('pointermove', onMove);
+      if (!isGlobal) container.addEventListener('pointerleave', onLeave);
+    }
+
+    const uniforms = {
+      uTime: { value: 0.0 },
+      uMouseWorld: { value: new THREE.Vector3(0, 0, 0) },
+      uColor: { value: new THREE.Color(opts.color || 0xE6E6DE) }
+    };
+
+    const vertexShader = `
+      uniform float uTime;
+      uniform vec3 uMouseWorld;
+      varying float vDepth;
+
+      float getTerrainHeight(vec2 p) {
+        float h = sin(p.x * 0.06 + uTime * 0.05) * cos(p.y * 0.06) * 6.0;
+        h += sin(p.x * 0.18) * sin(p.y * 0.22) * 2.5;
+        h += cos(p.x * 0.45) * sin(p.y * 0.35) * 0.8;
+        return h;
+      }
+
+      void main() {
+        vec3 pos = position;
+        float baseHeight = getTerrainHeight(pos.xz);
+
+        float dist = distance(pos.xz, uMouseWorld.xz);
+        float domeSwell = exp(-pow(dist / 14.0, 2.0)) * 12.0;
+
+        pos.y += baseHeight + domeSwell;
+
+        vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+        vDepth = -mvPosition.z;
+        gl_Position = projectionMatrix * mvPosition;
+      }
+    `;
+    const fragmentShader = `
+      uniform vec3 uColor;
+      varying float vDepth;
+      void main() {
+        float fogFactor = smoothstep(110.0, 45.0, vDepth);
+        gl_FragColor = vec4(uColor * fogFactor, 1.0);
+      }
+    `;
+
+    const size = opts.size ?? 120;
+    const seg = opts.segments ?? 130;
+    const geometry = new THREE.PlaneGeometry(size, size, seg, seg);
+    geometry.rotateX(-Math.PI / 2);
+
+    const material = new THREE.ShaderMaterial({
+      vertexShader, fragmentShader, uniforms, wireframe: true, transparent: true
+    });
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+
+    const clock = new THREE.Clock();
+    let elapsed = 0;
+
+    function onResize(){
+      const w = getW(), h = getH();
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h, false);
+    }
+    // ResizeObserver instead of window 'resize': inside an embedded artifact
+    // iframe, the parent can resize this frame without ever firing a native
+    // window resize event, which was leaving the canvas locked at whatever
+    // size (sometimes 0×0) it happened to be at on first paint.
+    if (isGlobal){
+      window.addEventListener('resize', onResize);
+    } else if ('ResizeObserver' in window){
+      new ResizeObserver(onResize).observe(container);
+    } else {
+      window.addEventListener('resize', onResize);
+    }
+
+    let visible = true;
+    if ('IntersectionObserver' in window){
+      new IntersectionObserver((entries) => {
+        visible = entries[0].isIntersecting;
+      }, { threshold: 0.01 }).observe(isGlobal ? document.body : container);
+    }
+
+    function animate(){
+      requestAnimationFrame(animate);
+      if (contextLost || !visible) return;
+      // getDelta() drives both the clock and the smoothing below, so
+      // response speed no longer depends on frame rate. Elapsed time is
+      // accumulated by hand since we only call getDelta() once per frame.
+      const delta = Math.min(clock.getDelta(), 0.1); // clamp so tab-switch gaps don't cause a huge jump
+      elapsed += delta;
+      uniforms.uTime.value = elapsed;
+
+      if (!reduceMotion){
+        // Exponential smoothing expressed as a rate (per second) rather than
+        // a flat per-frame factor — this is what makes the cursor response
+        // feel equally snappy at 30fps and 144fps. Higher rate = snappier.
+        const swellRate = 14;
+        const panRate = 9;
+        const swellT = 1 - Math.exp(-swellRate * delta);
+        const panT = 1 - Math.exp(-panRate * delta);
+
+        if (hasPointer){
+          raycaster.setFromCamera(mouse, camera);
+          raycaster.ray.intersectPlane(interactionPlane, mouseWorldPos);
+          uniforms.uMouseWorld.value.lerp(mouseWorldPos, swellT);
+        }
+        const panTargetX = hasPointer ? mouse.x * (opts.panRange ?? 15) : 0;
+        camera.position.x += (panTargetX - camera.position.x) * panT;
+      }
+      camera.lookAt(0, 2, 0);
+      renderer.render(scene, camera);
+    }
+    animate();
+    // Catch late layout settling (webfonts, iframe resize handshake) that a
+    // single synchronous setSize at init time can miss.
+    setTimeout(onResize, 250);
+    setTimeout(onResize, 1000);
+  }
+
+  (function initTerrains(){
+    function start(){
+      createWireframeTerrain(
+        document.getElementById('heroSection'),
+        document.getElementById('heroTerrain'),
+        { size: 140, segments: 130, camY: 25, camZ: 60, panRange: 15 }
+      );
+      const sampleBox = document.querySelector('#terrainSample')?.parentElement;
+      createWireframeTerrain(
+        sampleBox,
+        document.getElementById('terrainSample'),
+        { size: 90, segments: 80, camY: 16, camZ: 34, panRange: 6, fov: 55 }
+      );
+    }
+    // Script runs at the end of body, so the DOM and the synchronously
+    // loaded Three.js <script> above are already ready — no need to wait
+    // for window 'load' (which also waits on webfonts and stalls the
+    // terrain's first paint for no reason).
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', start);
+    } else {
+      start();
+    }
+  })();
+</script>
+
+</body>
+</html>

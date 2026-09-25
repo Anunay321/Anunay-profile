@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cyber-Fluid Physics Cursor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Outfit', sans-serif;
+      background-color: #050505;
+      background: radial-gradient(circle at center, #131320 0%, #030305 100%);
+    }
+
+    .container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      user-select: none; 
+    }
+    
+    .layer h1 {
+      font-size: 8vw;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 12px;
+      margin: 0;
+    }
+
+    .bottom-layer {
+      color: #ffffff;
+      text-shadow: 0 4px 30px rgba(255, 255, 255, 0.15);
+    }
+
+    /* Highly Optimized Glow Element */
+    .cursor-glow {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 250px;
+      height: 250px;
+      margin-left: -125px; /* offset center */
+      margin-top: -125px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.3) 0%, rgba(255, 0, 127, 0.15) 40%, transparent 70%);
+      pointer-events: none;
+      mix-blend-mode: screen;
+      will-change: transform;
+      z-index: 5; 
+    }
+
+    .water-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      filter: url(#water-filter); 
+      will-change: filter;
+      z-index: 10;
+    }
+
+    .top-layer {
+      background: linear-gradient(45deg, #00f0ff, #7000ff, #ff007f);
+      background-size: 200% 200%;
+      animation: gradientShift 4s ease infinite;
+      color: #050505;
+      clip-path: url(#water-clip);
+      -webkit-clip-path: url(#water-clip);
+      position: relative;
+      will-change: clip-path;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient hardware-accelerated glow -->
+  <div class="cursor-glow" id="cursor-glow"></div>
+
+  <!-- Hidden SVG defining the physics shapes and filters -->
+  <svg style="position: absolute; width: 0; height: 0;">
+    <clipPath id="water-clip">
+      <ellipse id="water-shape" cx="500" cy="500" rx="40" ry="40" />
+    </clipPath>
+
+    <!-- Reduced filter area and octaves for huge performance boost -->
+    <filter id="water-filter" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="2" result="noise">
+        <animate attributeName="baseFrequency" values="0.015;0.025;0.015" dur="4s" repeatCount="indefinite" />
+      </feTurbulence>
+      <feDisplacementMap id="displacement" in="SourceGraphic" in2="noise" scale="18" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+  </svg>
+
+  <div class="container">
+    <div class="layer bottom-layer">
+      <h1>Liquid Flow</h1>
+    </div>
+    
+    <div class="water-wrapper">
+      <div class="layer top-layer" id="cursor-layer">
+        <h1>Liquid Flow</h1>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const waterClip = document.getElementById('water-clip');
+    const waterShape = document.getElementById('water-shape');
+    const displacementMap = document.getElementById('displacement');
+    const cursorGlow = document.getElementById('cursor-glow');
+
+    // Tracking Variables
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    let lastMouseX = mouseX;
+    let lastMouseY = mouseY;
+
+    // Physics Variables
+    let circleX = mouseX;
+    let circleY = mouseY;
+    let velX = 0;
+    let velY = 0;
+    const tension = 0.15; 
+    const friction = 0.80; 
+
+    // SIZING VARIABLES - Increased Radius (3x)
+    const defaultRadius = 36; 
+    const clickRadius = 90;   
+    let targetRadius = defaultRadius;
+    let currentRadius = defaultRadius;
+    let radiusVel = 0;
+
+    // Feature Variables
+    let idleFrames = 0;
+    let gravityOffset = 0;
+    const drops = [];
+
+    window.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+    // Helper Function to Spawn Droplets
+    function spawnDrop(x, y, vx, vy, radius, shrinkRate) {
+      const dropEl = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      waterClip.appendChild(dropEl);
+      drops.push({ el: dropEl, x, y, vx, vy, r: radius, shrinkRate });
+    }
+
+    // Splash Burst on Click
+    window.addEventListener('mousedown', () => {
+      targetRadius = clickRadius;
+      
+      let numDrops = 8 + Math.floor(Math.random() * 5);
+      for (let i = 0; i < numDrops; i++) {
+        let angle = Math.random() * Math.PI * 2;
+        let burstSpeed = 12 + Math.random() * 18; 
+        spawnDrop(
+          circleX + Math.cos(angle) * (currentRadius * 0.5), 
+          circleY + Math.sin(angle) * (currentRadius * 0.5),
+          Math.cos(angle) * burstSpeed,
+          Math.sin(angle) * burstSpeed,
+          18 + Math.random() * 24, 
+          0.3 + Math.random() * 0.6 
+        );
+      }
+    });
+
+    window.addEventListener('mouseup', () => targetRadius = defaultRadius);
+
+    let isVisible = true;
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver((entries) => {
+        isVisible = entries[0].isIntersecting;
+      }, { threshold: 0.01 }).observe(document.body);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      if (!isVisible) return;
+      
+      // Idle Gravity & Dripping
+      let mouseMoved = Math.abs(mouseX - lastMouseX) > 0.5 || Math.abs(mouseY - lastMouseY) > 0.5;
+      if (mouseMoved) {
+        idleFrames = 0;
+        gravityOffset = 0; 
+      } else {
+        idleFrames++;
+      }
+      lastMouseX = mouseX;
+      lastMouseY = mouseY;
+
+      let targetY = mouseY;
+      if (idleFrames > 60) {
+        let dripTime = idleFrames - 60;
+        gravityOffset += dripTime * 0.025; 
+        targetY += gravityOffset;
+      }
+
+      // 1. POSITION PHYSICS
+      let dx = mouseX - circleX;
+      let dy = targetY - circleY; 
+      
+      velX += dx * tension;
+      velY += dy * tension;
+      velX *= friction;
+      velY *= friction;
+
+      circleX += velX;
+      circleY += velY;
+
+      // Screen Edge Collisions
+      let edgeMargin = currentRadius * 0.65; 
+      let hitSpeedX = Math.abs(velX);
+      let hitSpeedY = Math.abs(velY);
+
+      if (circleX < edgeMargin) {
+        circleX = edgeMargin;
+        velX = hitSpeedX * 0.7; 
+      } else if (circleX > window.innerWidth - edgeMargin) {
+        circleX = window.innerWidth - edgeMargin;
+        velX = -hitSpeedX * 0.7; 
+      }
+
+      if (circleY < edgeMargin) {
+        circleY = edgeMargin;
+        velY = hitSpeedY * 0.7; 
+      } else if (circleY > window.innerHeight - edgeMargin) {
+        circleY = window.innerHeight - edgeMargin;
+        velY = -hitSpeedY * 0.7; 
+      }
+
+      // 2. KINETIC DATA
+      let speed = Math.sqrt(velX * velX + velY * velY);
+      let angle = Math.atan2(velY, velX) * (180 / Math.PI);
+
+      // 3. FLUID DEFORMATION
+      let stretchFactor = 1 + (speed * 0.025);
+      stretchFactor = Math.min(stretchFactor, 2.8); 
+      let squishFactor = 1 / stretchFactor; 
+
+      // 4. RADIUS ELASTICITY
+      let dynamicTargetRadius = Math.max(targetRadius - (speed * 0.6), 24); 
+      radiusVel += (dynamicTargetRadius - currentRadius) * 0.15;
+      radiusVel *= 0.75;
+      currentRadius = Math.max(currentRadius + radiusVel, 15); 
+
+      let rx = currentRadius * stretchFactor;
+      let ry = currentRadius * squishFactor;
+
+      // 5. UPDATE MAIN SVG SHAPE
+      waterShape.setAttribute('cx', circleX);
+      waterShape.setAttribute('cy', circleY);
+      waterShape.setAttribute('rx', rx);
+      waterShape.setAttribute('ry', ry);
+      waterShape.setAttribute('transform', `rotate(${angle}, ${circleX}, ${circleY})`);
+
+      // UPDATE ACCELERATED GLOW
+      cursorGlow.style.transform = `translate3d(${circleX}px, ${circleY}px, 0)`;
+
+      // 6. DYNAMIC TURBULENCE
+      let targetScale = 18 + (speed * 1.5);
+      let currentScale = parseFloat(displacementMap.getAttribute('scale'));
+      displacementMap.setAttribute('scale', currentScale + (targetScale - currentScale) * 0.1);
+
+      // 7. TRAILING DROPLETS LOGIC
+      if (speed > 15 && Math.random() > 0.5) {
+        spawnDrop(
+          circleX - (velX * 0.5), 
+          circleY - (velY * 0.5),
+          velX * 0.15, 
+          velY * 0.15,
+          18 + Math.random() * 24, // increased trail drop size
+          0.25 + Math.random() * 0.5 
+        );
+      }
+
+      // Update existing drops
+      for (let i = drops.length - 1; i >= 0; i--) {
+        let drop = drops[i];
+
+        drop.x += drop.vx;
+        drop.y += drop.vy;
+        drop.vx *= 0.92; 
+        drop.vy *= 0.92;
+
+        drop.r -= drop.shrinkRate;
+
+        if (drop.r <= 0) {
+          drop.el.remove();
+          drops.splice(i, 1);
+        } else {
+          drop.el.setAttribute('cx', drop.x);
+          drop.el.setAttribute('cy', drop.y);
+          drop.el.setAttribute('r', drop.r);
+        }
+      }
+    }
+
+    animate();
+  </script>
+</body>
+</html>
