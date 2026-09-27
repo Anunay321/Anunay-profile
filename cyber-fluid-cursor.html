@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cyber-Fluid Physics Cursor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="cyber-fluid.css">
+</head>
+<body>
+
+  <!-- Ambient hardware-accelerated glow -->
+  <div class="cursor-glow" id="cursor-glow"></div>
+
+  <!-- SVG defining the advanced metaball physics, shockwaves, and filters -->
+  <svg style="position: absolute; width: 0; height: 0;">
+    <mask id="water-mask">
+      <g id="water-clip" fill="white" filter="url(#water-filter)">
+        <!-- Main Cursor Metaball -->
+        <ellipse id="water-shape" cx="500" cy="500" rx="42" ry="42" />
+        <!-- Spring Tendril Nodes (Dynamic metaball chain) -->
+        <g id="metaball-chain"></g>
+        <!-- Shockwave Ripples -->
+        <g id="ripple-layer"></g>
+      </g>
+    </mask>
+
+    <!-- Optimized Gooey + Fluid displacement filter -->
+    <filter id="water-filter" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="blur" />
+      <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 28 -11" result="goo" />
+      <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="2" result="noise">
+        <animate attributeName="baseFrequency" values="0.015;0.026;0.015" dur="3.5s" repeatCount="indefinite" />
+      </feTurbulence>
+      <feDisplacementMap id="displacement" in="goo" in2="noise" scale="18" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+  </svg>
+
+  <div class="container">
+    <div class="layer bottom-layer">
+      <h1 id="headline-bottom">Liquid Flow</h1>
+    </div>
+    
+    <div class="water-wrapper">
+      <div class="layer top-layer" id="cursor-layer">
+        <h1 id="headline-top">Liquid Flow</h1>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gritty Hard Texture Film Overlay -->
+  <div class="texture-overlay" id="texture-overlay"></div>
+
+  <!-- Advanced Cyber HUD Control Dock -->
+  <nav class="cyber-dock" id="cyber-dock">
+    <div class="dock-group">
+      <button class="dock-btn active" id="btn-fluid" data-mode="fluid">
+        <span class="icon">💧</span>
+        <span class="label">Cyber Liquid</span>
+      </button>
+      <button class="dock-btn" id="btn-flame" data-mode="flame">
+        <span class="icon">🔥</span>
+        <span class="label">Solar Flame</span>
+      </button>
+    </div>
+
+    <div class="dock-divider"></div>
+
+    <div class="dock-group">
+      <button class="dock-btn" id="btn-viscosity" title="Toggle Viscosity">
+        <span class="icon">⚡</span>
+        <span class="label" id="viscosity-label">Mercury</span>
+      </button>
+      <button class="dock-btn active" id="btn-texture" title="Toggle Hard Texture">
+        <span class="icon">📺</span>
+        <span class="label" id="texture-label">Texture: ON</span>
+      </button>
+    </div>
+  </nav>
+
+  <script src="cyber-fluid.js"></script>
+</body>
+</html>

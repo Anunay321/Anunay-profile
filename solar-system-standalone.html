@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Solaris</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="solar-system.css">
+
+</head>
+<body>
+<canvas id="gl" aria-label="Interactive solar system. Drag to rotate, pinch or scroll to zoom, tap a planet to focus."></canvas>
+<div id="labels"></div>
+<div id="fallback">This page needs WebGL. Try a recent version of Chrome, Safari, or Firefox.</div>
+<div id="load"><div class="spinner" style="position:relative"></div><span>Building the solar systemâ€¦</span></div>
+
+<nav class="nav" aria-label="Controls">
+  <div class="pill glass brand">Solaris</div>
+  <div class="pill glass">
+    <button id="bOver">Overview</button>
+    <button id="bOrb" aria-pressed="true">Orbits</button>
+    <button id="bLab" aria-pressed="true">Labels</button>
+  </div>
+</nav>
+
+<div class="hint" id="hint"><b>Drag</b> to rotate &middot; <b>pinch or scroll</b> to zoom &middot; <b>tap</b> a planet<br>Sizes and distances are compressed to fit on screen.</div>
+
+<div class="dock">
+  <div class="card glass" id="card"></div>
+  <div class="time glass">
+    <span>Time</span>
+    <input id="speed" type="range" min="0" max="100" value="25" aria-label="Simulation speed">
+    <output id="speedOut">10 days/s</output>
+    <button id="bPause">Pause</button>
+    <button id="bCinematic">Cinematic</button>
+  </div>
+  <div class="chips" id="chips"></div>
+</div>
+
+<script src="three.min.js"></script>
+<script src="textures.js"></script>`n<script src="solar-system.js"></script>
+
+</body>
+</html>
+

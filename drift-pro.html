@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Drift Pro — Advanced Particle Physics Simulation</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Modular Stylesheet -->
+  <link rel="stylesheet" href="drift-pro.css">
+</head>
+<body>
+
+  <!-- WebGL Rendering Canvas -->
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <div id="fallback">This experience requires WebGL2 or WebGL enabled.</div>
+
+  <!-- Primary Floating Navigation -->
+  <nav class="nav" aria-label="Main Navigation">
+    <div class="pill brand">Drift Pro</div>
+    <div class="pill links">
+      <button data-scene="0">Ember</button>
+      <button data-scene="2">Vortex</button>
+      <button data-scene="3">Black hole</button>
+      <button id="btn-gallery">Gallery (14)</button>
+      <button data-scene="13">Halo</button>
+    </div>
+    <button class="pill cta" data-scene="0">Explore Drift</button>
+  </nav>
+
+  <!-- Vertical Scene Rail -->
+  <nav class="rail" id="rail" aria-label="Scenes Navigation"></nav>
+
+  <!-- Active Scene Metadata -->
+  <div class="meta" aria-hidden="true">
+    <span id="count">01 / 15</span>
+    <b id="name">Ember</b>
+  </div>
+
+  <!-- Dynamic Typography Captions -->
+  <div class="caption" id="caption"></div>
+
+  <!-- Scroll / Swipe Hint -->
+  <div class="hint" id="hint">
+    <span>Swipe, scroll, or use arrow keys</span>
+    <i></i>
+  </div>
+
+  <!-- Bottom Timeline Progress Bar -->
+  <div class="bar" id="bar"></div>
+
+  <!-- Advanced Interactive Control Dock -->
+  <div class="control-dock">
+    <button class="dock-toggle" id="btn-orbit" title="Toggle Free 3D Orbit Camera">
+      <span>📽️</span> Mode: Sequence
+    </button>
+  </div>
+
+  <!-- Custom Kinetic Cursor -->
+  <div class="cursor" id="cursor"></div>
+
+  <!-- Fullscreen Scene Gallery Modal -->
+  <div class="gallery-modal" id="gallery-modal" role="dialog" aria-modal="true">
+    <div class="gallery-card">
+      <div class="gallery-header">
+        <h3>Geometric Manifolds & Forms</h3>
+        <button class="gallery-close" id="gallery-close" aria-label="Close Gallery">&times;</button>
+      </div>
+      <div class="gallery-grid" id="gallery-grid"></div>
+    </div>
+  </div>
+
+  <!-- Modular Scripts: Three.js and Drift Pro Engine -->
+  <script src="three.min.js"></script>
+  <script src="drift-pro.js"></script>
+</body>
+</html>
